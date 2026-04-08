@@ -1,0 +1,27 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Logs and outputs (history kept, individual runs not)
+logs/newsletter_*.html
+logs/metrics.json
+
+# Subscriber list — managed in Google Sheets, never committed
+data/subscribers.txt
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db

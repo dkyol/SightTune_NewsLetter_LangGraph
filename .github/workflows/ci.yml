@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check src/ tests/
+
+      - name: Unit tests (mocked LLM — no API spend)
+        run: pytest tests/ -v --tb=short
+        env:
+          OPENAI_API_KEY: "fake-key-for-tests"
+          SERP_API: "fake"
+          TAVILY_API: "fake"
+
+      - name: Smoke test — validate graph compiles
+        run: python -c "from src.agent import build_graph; app = build_graph(); print('Graph OK')"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SERP_API: ${{ secrets.SERP_API }}
+          TAVILY_API: ${{ secrets.TAVILY_API }}

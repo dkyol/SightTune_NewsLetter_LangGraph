@@ -1,0 +1,59 @@
+name: Monthly Newsletter
+
+on:
+  schedule:
+    - cron: "0 14 15-21 * 3"  # 3rd Wednesday of every month at 9am ET (14:00 UTC)
+                               # Logic: 3rd Wed always falls between the 15th–21st
+  workflow_dispatch:        # allows manual trigger from GitHub Actions UI
+
+jobs:
+  send-newsletter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write   # needed to commit metrics + subscriber updates
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run newsletter agent
+        run: python -m src.run 2>&1 | tee logs/run.log
+        env:
+          OPENAI_API_KEY:          ${{ secrets.OPENAI_API_KEY }}
+          SERP_API:                ${{ secrets.SERP_API }}
+          TAVILY_API:              ${{ secrets.TAVILY_API }}
+          GMAIL_USER:              ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:      ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_CREDENTIALS:      ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_SHEET_ID:         ${{ secrets.GOOGLE_SHEET_ID }}
+          NEWSLETTER_THEME:        "piano music technology"
+          SEND_EMAIL:              "true"
+          LANGCHAIN_API_KEY:       ${{ secrets.LANGCHAIN_API_KEY }}
+
+      - name: Upload logs and newsletter as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter-${{ github.run_id }}
+          path: |
+            logs/run.log
+            logs/newsletter_*.html
+            logs/metrics.json
+          retention-days: 90
+
+      - name: Commit metrics history
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add logs/history.jsonl
+          git diff --staged --quiet || git commit -m "chore: newsletter metrics $(date +%Y-%m-%d)"
+          git push

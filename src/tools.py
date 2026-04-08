@@ -1,0 +1,38 @@
+import concurrent.futures
+from langchain_core.tools import tool
+from langchain_community.utilities import SerpAPIWrapper
+from langchain_community.tools.tavily_search import TavilySearchResults
+
+serp = SerpAPIWrapper()
+
+
+@tool
+def web_search(query: str) -> str:
+    """Search the web for current information. Use this FIRST — default search tool."""
+    return serp.run(query)
+
+
+@tool
+def tavily_search(query: str) -> str:
+    """AI-optimized search with structured results. Use only when web_search is insufficient."""
+    return str(TavilySearchResults(max_results=5).invoke(query))
+
+
+@tool
+def deep_research(query: str) -> str:
+    """For complex topics requiring multi-step investigation. Use only when other tools are insufficient."""
+    def _run():
+        from deepagents import create_deep_agent  # lazy import
+        agent = create_deep_agent()
+        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+        return result["messages"][-1].content
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(_run)
+        try:
+            return future.result(timeout=30)
+        except concurrent.futures.TimeoutError:
+            return "Deep research timed out. Summarise from web_search results only."
+
+
+RESEARCH_TOOLS = [web_search, tavily_search, deep_research]
