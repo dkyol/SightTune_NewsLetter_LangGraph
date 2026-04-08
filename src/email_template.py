@@ -14,9 +14,9 @@ def load_logo_b64() -> str:
 
 def parse_article(text: str) -> tuple[str, str]:
     """Split article text into (headline, body) — strips markdown bold/headers."""
-    lines = [l for l in text.strip().splitlines() if l.strip()]
+    lines = [line for line in text.strip().splitlines() if line.strip()]
     headline = lines[0].strip().strip("#*").strip() if lines else "Untitled"
-    body = " ".join(l.strip() for l in lines[1:]).strip()
+    body = " ".join(line.strip() for line in lines[1:]).strip()
     return headline, body
 
 

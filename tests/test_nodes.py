@@ -1,6 +1,6 @@
 """Unit tests for individual nodes — LLM calls are mocked."""
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
 from langchain_core.messages import AIMessage
 
 from src.agent import reviewer_node, topic_planner_node

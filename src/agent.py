@@ -1,16 +1,15 @@
 import ast
 from datetime import date
-from typing import Optional
 
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, StateGraph
+from langgraph.prebuilt import ToolNode
 
+from src.email_template import build_email, load_logo_b64
 from src.state import NewsletterState
 from src.tools import RESEARCH_TOOLS
-from src.email_template import build_email, load_logo_b64
 
 MAX_RESEARCH_ITERATIONS = 5
 MAX_REVISIONS = 2
@@ -38,7 +37,7 @@ def topic_planner_node(state: NewsletterState) -> NewsletterState:
     try:
         topics = ast.literal_eval(response.content.strip())
     except Exception:
-        topics = [l.strip("- *1234567890.") for l in response.content.strip().splitlines() if l.strip()][:3]
+        topics = [line.strip("- *1234567890.") for line in response.content.strip().splitlines() if line.strip()][:3]
     print(f"Topics: {topics}")
     return {
         **state,
@@ -173,7 +172,7 @@ def should_continue_research(state: NewsletterState) -> str:
     prior_msgs      = state.get("research_messages", [])
     tool_calls_made = sum(1 for m in prior_msgs if hasattr(m, "tool_calls") and m.tool_calls)
     if tool_calls_made >= MAX_RESEARCH_ITERATIONS:
-        print(f"  Max research iterations reached — moving to writer")
+        print("  Max research iterations reached — moving to writer")
         return "writer"
     if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
         return "tools"

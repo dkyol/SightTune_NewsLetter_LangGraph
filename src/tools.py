@@ -1,15 +1,14 @@
 import concurrent.futures
-from langchain_core.tools import tool
-from langchain_community.utilities import SerpAPIWrapper
-from langchain_community.tools.tavily_search import TavilySearchResults
 
-serp = SerpAPIWrapper()
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.utilities import SerpAPIWrapper
+from langchain_core.tools import tool
 
 
 @tool
 def web_search(query: str) -> str:
     """Search the web for current information. Use this FIRST — default search tool."""
-    return serp.run(query)
+    return SerpAPIWrapper().run(query)
 
 
 @tool

@@ -1,7 +1,8 @@
 import operator
 from typing import Optional
-from typing_extensions import TypedDict, Annotated, List, Literal
+
 from langchain_core.messages import AnyMessage
+from typing_extensions import Annotated, List, Literal, TypedDict
 
 Route = Literal["researcher", "writer", "reviewer", "newsletter_compiler"]
 

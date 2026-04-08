@@ -2,30 +2,30 @@
 Entry point for the SightTune newsletter agent.
 Run with:  python -m src.run
 """
-import os
 import json
+import os
 import time
-import uuid
 import traceback
+import uuid
 from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_community.callbacks import get_openai_callback
+
+from src.agent import build_graph
+from src.mailer import send_newsletter
+
 load_dotenv()
 
 # Remap env var names to what LangChain expects
 os.environ["SERPAPI_API_KEY"] = os.getenv("SERP_API", "")
 os.environ["TAVILY_API_KEY"]  = os.getenv("TAVILY_API", "")
 
-# LangSmith tracing - opt
+# LangSmith tracing (optional — set LANGCHAIN_API_KEY to enable)
 if os.getenv("LANGCHAIN_API_KEY"):
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
     os.environ["LANGCHAIN_PROJECT"]    = "sighttune-newsletter"
-
-from langchain_community.callbacks import get_openai_callback
-
-from src.agent import build_graph
-from src.mailer import send_newsletter
 
 LOGS_DIR = Path(__file__).parent.parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
@@ -45,7 +45,7 @@ def main():
     send_email = os.getenv("SEND_EMAIL", "true").lower() == "true"
 
     print(f"{'='*55}")
-    print(f"  SightTune Newsletter Agent")
+    print("  SightTune Newsletter Agent")
     print(f"  Theme : {theme}")
     print(f"  Date  : {date.today().isoformat()}")
     print(f"{'='*55}\n")
@@ -117,7 +117,7 @@ def main():
     if summary_path:
         with open(summary_path, "a") as f:
             f.write("## SightTune Newsletter Run\n")
-            f.write(f"| Metric | Value |\n|--------|-------|\n")
+            f.write("| Metric | Value |\n|--------|-------|\n")
             f.write(f"| Date | {metrics['date']} |\n")
             f.write(f"| Duration | {metrics['duration_s']}s |\n")
             f.write(f"| Tokens | {metrics['total_tokens']:,} |\n")
