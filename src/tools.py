@@ -5,6 +5,11 @@ from langchain_community.utilities import SerpAPIWrapper
 from langchain_core.tools import tool
 
 
+def run_topic_search(query: str) -> str:
+    """Plain search for topic discovery — not an agent tool, called directly by the topic planner."""
+    return SerpAPIWrapper().run(query)
+
+
 @tool
 def web_search(query: str) -> str:
     """Search the web for current information. Use this FIRST — default search tool."""

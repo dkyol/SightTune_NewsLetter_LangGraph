@@ -16,7 +16,7 @@ from langchain_community.callbacks import get_openai_callback
 from src.agent import build_graph
 from src.mailer import send_newsletter
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Remap env var names to what LangChain expects
 os.environ["SERPAPI_API_KEY"] = os.getenv("SERP_API", "")
@@ -54,21 +54,24 @@ def main():
     config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
     initial_state = {
-        "theme":             theme,
-        "topics":            [],
-        "current_index":     0,
-        "current_research":  None,
-        "current_draft":     None,
-        "revision_count":    0,
-        "articles":          [],
-        "research_messages": [],
-        "messages":          [],
-        "output":            None,
+        "theme":                theme,
+        "topics":               [],
+        "topic_search_results": None,
+        "current_index":        0,
+        "current_research":     None,
+        "current_sources":      None,
+        "current_draft":        None,
+        "revision_count":       0,
+        "articles":             [],
+        "research_messages":    [],
+        "messages":             [],
+        "output":               None,
     }
 
-    node_counts  = {}
-    start_time   = time.time()
-    final_output = None
+    node_counts   = {}
+    start_time    = time.time()
+    final_output  = None
+    final_topics  = []
 
     try:
         with get_openai_callback() as cb:
@@ -78,6 +81,8 @@ def main():
                     node_counts[node_name] = node_counts.get(node_name, 0) + 1
                     print(f"[{elapsed:6.1f}s] {node_name}")
 
+                    if node_name == "topic_planner":
+                        final_topics = node_output.get("topics", [])
                     if node_name == "newsletter_compiler":
                         final_output = node_output.get("output")
 
@@ -90,13 +95,14 @@ def main():
 
     # ── Metrics ────────────────────────────────────────────────────────────────
     metrics = {
-        "date":            date.today().isoformat(),
-        "theme":           theme,
-        "duration_s":      round(total_time, 1),
-        "total_tokens":    cb.total_tokens,
-        "total_cost":      round(cb.total_cost, 4),
-        "articles_written": len(initial_state.get("articles", [])),
-        "node_counts":     node_counts,
+        "date":             date.today().isoformat(),
+        "theme":            theme,
+        "topics":           final_topics,
+        "duration_s":       round(total_time, 1),
+        "total_tokens":     cb.total_tokens,
+        "total_cost":       round(cb.total_cost, 4),
+        "articles_written": len(final_topics),
+        "node_counts":      node_counts,
     }
 
     metrics_path = LOGS_DIR / "metrics.json"
