@@ -4,6 +4,10 @@ An AI-powered newsletter agent for [SightTune Music Technology](https://sighttun
 
 ![SightTune Logo](assets/logo.png)
 
+## Example output
+
+[newsletter_2026-04-09.html](logs/newsletter_2026-04-09.html) — download and open in a browser to see a real generated newsletter.
+
 ## How it works
 
 The agent runs as a [LangGraph](https://github.com/langchain-ai/langgraph) state machine with the following pipeline:
