@@ -6,7 +6,7 @@ An AI-powered newsletter agent for [SightTune Music Technology](https://sighttun
 
 ## Example output
 
-[newsletter_2026-04-09.html](logs/newsletter_2026-04-09.html) — download and open in a browser to see a real generated newsletter.
+[View example newsletter](https://htmlpreview.github.io/?https://github.com/dkyol/SightTune_NewsLetter_LangGraph/blob/main/logs/newsletter_2026-04-09.html)
 
 ## How it works
 
