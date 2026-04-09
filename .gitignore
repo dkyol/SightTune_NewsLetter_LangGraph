@@ -13,6 +13,7 @@ build/
 
 # Logs and outputs (history kept, individual runs not)
 logs/newsletter_*.html
+!logs/newsletter_2026-04-09.html
 logs/metrics.json
 
 # Subscriber list — managed in Google Sheets, never committed
