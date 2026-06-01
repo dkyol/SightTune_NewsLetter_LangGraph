@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from langchain_community.callbacks import get_openai_callback
 
 from src.agent import build_graph
+from src.approval import send_approval_request
 from src.mailer import send_newsletter
 
 load_dotenv(override=True)
@@ -136,8 +137,19 @@ def main():
         output_path.write_text(final_output, encoding="utf-8")
         print(f"HTML saved: {output_path}")
 
-        if send_email:
-            subject = f"SightTune Newsletter — {date.today().strftime('%B %Y')}"
+        subject = f"SightTune Newsletter — {date.today().strftime('%B %Y')}"
+
+        hitl_enabled = os.getenv("HITL_ENABLED", "true").lower() == "true"
+        if hitl_enabled and send_email:
+            # Save for the approval-check cron, then email the preview and exit.
+            # check_approval.yml will call run_send.py every 3h to finish the send.
+            pending_dir  = Path(__file__).parent.parent / "pending"
+            pending_dir.mkdir(exist_ok=True)
+            pending_path = pending_dir / f"newsletter_{date.today().isoformat()}.html"
+            pending_path.write_text(final_output, encoding="utf-8")
+            print(f"Pending newsletter saved: {pending_path}")
+            send_approval_request(final_output, subject)
+        elif send_email:
             send_newsletter(final_output, subject)
     else:
         print("WARNING: no newsletter output captured")

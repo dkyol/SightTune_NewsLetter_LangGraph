@@ -9,7 +9,7 @@ on:
 jobs:
   send-newsletter:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     permissions:
       contents: write   # needed to commit metrics + subscriber updates
 
@@ -36,6 +36,8 @@ jobs:
           GOOGLE_SHEET_ID:         ${{ secrets.GOOGLE_SHEET_ID }}
           NEWSLETTER_THEME:        "piano music technology"
           SEND_EMAIL:              "true"
+          HITL_ENABLED:            "true"
+          APPROVAL_EMAIL:          ${{ secrets.APPROVAL_EMAIL }}
           LANGCHAIN_API_KEY:       ${{ secrets.LANGCHAIN_API_KEY }}
 
       - name: Upload logs and newsletter as artifacts
@@ -49,11 +51,11 @@ jobs:
             logs/metrics.json
           retention-days: 90
 
-      - name: Commit metrics history
+      - name: Commit pending newsletter and metrics
         if: success()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add logs/history.jsonl
-          git diff --staged --quiet || git commit -m "chore: newsletter metrics $(date +%Y-%m-%d)"
+          git add logs/history.jsonl pending/
+          git diff --staged --quiet || git commit -m "chore: newsletter generated $(date +%Y-%m-%d), awaiting approval"
           git push

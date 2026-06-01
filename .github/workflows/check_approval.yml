@@ -1,0 +1,50 @@
+name: Check Newsletter Approval
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # every 3 hours
+  workflow_dispatch:          # manual trigger from GitHub Actions UI
+
+jobs:
+  check-and-send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # needed to delete the pending file after sending
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check for approval and send if approved
+        run: python -m src.run_send 2>&1 | tee logs/send.log
+        env:
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_SHEET_ID:    ${{ secrets.GOOGLE_SHEET_ID }}
+          APPROVAL_EMAIL:     ${{ secrets.APPROVAL_EMAIL }}
+
+      - name: Upload send log as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: send-log-${{ github.run_id }}
+          path: logs/send.log
+          retention-days: 30
+
+      - name: Commit pending directory changes
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pending/
+          git diff --staged --quiet || git commit -m "chore: newsletter sent/expired $(date +%Y-%m-%d)"
+          git push
