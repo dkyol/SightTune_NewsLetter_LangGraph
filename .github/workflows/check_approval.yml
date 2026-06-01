@@ -2,7 +2,7 @@ name: Check Newsletter Approval
 
 on:
   schedule:
-    - cron: "0 */3 * * *"   # every 3 hours
+    - cron: "0 */6 * * *"   # every 6 hours
   workflow_dispatch:          # manual trigger from GitHub Actions UI
 
 jobs:
