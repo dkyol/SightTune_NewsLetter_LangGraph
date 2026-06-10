@@ -30,7 +30,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_SHEET_ID:    ${{ secrets.GOOGLE_SHEET_ID }}
-          APPROVAL_EMAIL:     ${{ secrets.APPROVAL_EMAIL }}
+          APPROVAL_EMAIL:     ${{ vars.APPROVAL_EMAIL }}
 
       - name: Upload send log as artifact
         if: always()

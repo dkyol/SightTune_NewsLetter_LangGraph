@@ -142,12 +142,23 @@ def main():
         hitl_enabled = os.getenv("HITL_ENABLED", "true").lower() == "true"
         if hitl_enabled and send_email:
             # Save for the approval-check cron, then email the preview and exit.
-            # check_approval.yml will call run_send.py every 3h to finish the send.
+            # check_approval.yml will call run_send.py about every 6h to finish the send.
             pending_dir  = Path(__file__).parent.parent / "pending"
             pending_dir.mkdir(exist_ok=True)
             pending_path = pending_dir / f"newsletter_{date.today().isoformat()}.html"
             pending_path.write_text(final_output, encoding="utf-8")
             print(f"Pending newsletter saved: {pending_path}")
+
+            # Sidecar metadata so run_send.py checks the exact operator address used here
+            # (and the exact subject), even if APPROVAL_EMAIL changes mid-cycle.
+            approval_email = os.getenv("APPROVAL_EMAIL", os.environ["GMAIL_USER"])
+            meta_path = pending_dir / f"newsletter_{date.today().isoformat()}.json"
+            meta_path.write_text(
+                json.dumps({"approval_email": approval_email, "subject": subject}, indent=2),
+                encoding="utf-8",
+            )
+            print(f"Pending metadata saved: {meta_path}")
+
             send_approval_request(final_output, subject)
         elif send_email:
             send_newsletter(final_output, subject)

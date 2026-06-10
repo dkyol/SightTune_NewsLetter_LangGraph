@@ -5,6 +5,11 @@ on:
     - cron: "0 14 15-21 * 3"  # 3rd Wednesday of every month at 9am ET (14:00 UTC)
                                # Logic: 3rd Wed always falls between the 15th–21st
   workflow_dispatch:        # allows manual trigger from GitHub Actions UI
+    inputs:
+      approval_email:
+        description: "Operator email to send the approval request to (defaults to the APPROVAL_EMAIL repo variable)"
+        required: false
+        type: string
 
 jobs:
   send-newsletter:
@@ -37,7 +42,7 @@ jobs:
           NEWSLETTER_THEME:        "piano music technology"
           SEND_EMAIL:              "true"
           HITL_ENABLED:            "true"
-          APPROVAL_EMAIL:          ${{ secrets.APPROVAL_EMAIL }}
+          APPROVAL_EMAIL:          ${{ inputs.approval_email || vars.APPROVAL_EMAIL }}
           LANGCHAIN_API_KEY:       ${{ secrets.LANGCHAIN_API_KEY }}
 
       - name: Upload logs and newsletter as artifacts
