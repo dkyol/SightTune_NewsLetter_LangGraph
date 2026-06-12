@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from langchain_core.messages import AIMessage
 
-from src.agent import reviewer_node, topic_planner_node
+from src.agent import _screen_relevance, reviewer_node, topic_planner_node
 
 
 def make_state(**overrides):
@@ -44,12 +44,13 @@ def test_reviewer_requests_revision(mock_llm):
     assert result["current_draft"].startswith("REVISION:")
 
 @patch("src.agent.llm")
-def test_reviewer_force_approves_at_max_revisions(mock_llm):
-    state  = make_state(revision_count=2)
+def test_reviewer_drops_article_at_max_revisions(mock_llm):
+    # Nothing is force-approved: at the revision limit the article is dropped, not shipped.
+    state  = make_state(revision_count=3)
     result = reviewer_node(state)
-    # Should approve without calling LLM
-    mock_llm.invoke.assert_not_called()
-    assert len(result["articles"]) == 1
+    mock_llm.invoke.assert_not_called()        # no LLM call needed to drop
+    assert len(result["articles"]) == 0        # article NOT added
+    assert result["current_index"] == 1        # advanced to next topic
     assert result["revision_count"] == 0
 
 @patch("src.agent.llm")
@@ -58,6 +59,31 @@ def test_reviewer_handles_approved_with_punctuation(mock_llm):
     state  = make_state()
     result = reviewer_node(state)
     assert len(result["articles"]) == 1
+
+
+# ── _screen_relevance (relevance gate) ────────────────────────────────────────
+
+@patch("src.agent.llm")
+def test_relevance_keeps_only_on_theme(mock_llm):
+    mock_llm.invoke.return_value = AIMessage(content="[1]")
+    result = _screen_relevance(
+        "piano music technology",
+        ["On-theme piano AI learning tool", "Generic data-marketing consultancy"],
+    )
+    assert result == ["On-theme piano AI learning tool"]
+
+@patch("src.agent.llm")
+def test_relevance_fails_open_on_bad_response(mock_llm):
+    mock_llm.invoke.return_value = AIMessage(content="not a list")
+    topics = ["topic A", "topic B"]
+    assert _screen_relevance("piano music technology", topics) == topics
+
+@patch("src.agent.llm")
+def test_relevance_fails_open_when_all_rejected(mock_llm):
+    # A model that rejects everything must not empty the issue.
+    mock_llm.invoke.return_value = AIMessage(content="[]")
+    topics = ["topic A", "topic B"]
+    assert _screen_relevance("piano music technology", topics) == topics
 
 
 # ── topic_planner_node ────────────────────────────────────────────────────────

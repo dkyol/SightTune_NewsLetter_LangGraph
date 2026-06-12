@@ -29,7 +29,8 @@ def test_routes_to_writer_on_revision():
     assert route_after_reviewer(state) == "writer"
 
 def test_routes_to_compiler_when_all_done():
-    state = make_state(articles=["a1", "a2", "a3"])
+    # All topics processed (current_index reached len(topics)) → compile.
+    state = make_state(articles=["a1", "a2", "a3"], current_index=3)
     assert route_after_reviewer(state) == "newsletter_compiler"
 
 def test_routes_to_researcher_after_second_approval():

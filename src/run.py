@@ -61,6 +61,7 @@ def main():
         "current_index":        0,
         "current_research":     None,
         "current_sources":      None,
+        "current_evidence":     None,
         "current_draft":        None,
         "revision_count":       0,
         "articles":             [],

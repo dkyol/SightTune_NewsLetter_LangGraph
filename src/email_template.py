@@ -122,25 +122,25 @@ def build_email(theme: str, articles: list, today: str, logo_b64: str) -> str:
           </td>
         </tr>
 
-        <!-- TESTFLIGHT CTA -->
+        <!-- APP STORE CTA -->
         <tr>
           <td align="center" style="padding:52px 48px 56px 48px;background-color:#ffffff;">
             <img src="data:image/png;base64,{logo_b64}"
                  width="144" alt="SightTune"
                  style="display:block;margin:0 auto;"/>
             <p style="margin:24px 0 6px 0;font-size:9px;letter-spacing:4px;color:#aaaaaa;
-                      text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Now in Beta</p>
+                      text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Now Available</p>
             <p style="margin:0 auto 32px auto;font-size:14px;line-height:1.75;color:#888888;
                       font-family:Arial,Helvetica,sans-serif;max-width:340px;text-align:center;">
               Experience AI-powered computer vision for pianists.
-              Join the SightTune beta on TestFlight today.
+              Download SightTune on the App Store today.
             </p>
-            <a href="https://testflight.apple.com/join/Wu5Vs9q4"
+            <a href="https://apps.apple.com/us/app/sighttune-ai-page-turner/id6756153566"
                style="display:inline-block;background-color:#1a1a1a;color:#ffffff;
                       text-decoration:none;padding:16px 40px;
                       font-size:9px;letter-spacing:3px;text-transform:uppercase;
                       font-family:Arial,Helvetica,sans-serif;">
-              Join Beta on TestFlight
+              Download on the App Store
             </a>
           </td>
         </tr>

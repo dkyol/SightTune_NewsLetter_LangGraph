@@ -13,6 +13,7 @@ class NewsletterState(TypedDict):
     current_index:        int
     current_research:     Optional[str]
     current_sources:      Optional[List[str]]
+    current_evidence:     Optional[str]
     current_draft:        Optional[str]
     revision_count:       int
     articles:             List[str]
